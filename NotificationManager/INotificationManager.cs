@@ -23,7 +23,7 @@ namespace NotificationManager
     public static bool IsEmailValid( this string obj )
     {
       if (obj.IsValid())
-        return (Regex.Match (obj, "^\\S+@\\S+\\.\\S+$").Exists()) ? true : false;
+        return Regex.Match(obj, "^\\S+@\\S+\\.\\S+$").Success;
       else
         return false;
     }
