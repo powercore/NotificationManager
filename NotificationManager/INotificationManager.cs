@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace NotificationManager
 {
@@ -19,6 +20,13 @@ namespace NotificationManager
       else
         return false;
     }
+    public static bool IsEmailValid( this string obj )
+    {
+      if (obj.IsValid())
+        return (Regex.Match (obj, "^\\S+@\\S+\\.\\S+$").Exists()) ? true : false;
+      else
+        return false;
+    }
   }
 
   public class Signal
@@ -31,20 +39,22 @@ namespace NotificationManager
       Name = name;
       Recipients = new List<string>();
     }
+
     private string GetRecipient(string email)
     {
-      foreach (string recipientEmail in Recipients)
-      {
-        if (recipientEmail == email)
-          return recipientEmail;
+      if (email.IsEmailValid())
+        foreach (string recipientEmail in Recipients)
+        {
+          if (recipientEmail == email)
+            return recipientEmail;
 
-      }
+        }
       return null;
     }
 
     public bool IsRecipientExists(string email)
     {
-      if (email.IsValid())
+      if (email.IsEmailValid())
       {
         if (GetRecipient(email).Exists())
           return true;
@@ -55,7 +65,7 @@ namespace NotificationManager
 
     public void AddNewRecipient(string email)
     {
-      if (email.IsValid())
+      if (email.IsEmailValid())
       {
         if (!IsRecipientExists(email))
         {
@@ -66,7 +76,7 @@ namespace NotificationManager
 
     public void DeleteRecipient(string recipientEmail)
     {
-       if (recipientEmail.IsValid())
+       if (recipientEmail.IsEmailValid())
        {
           for (int i = 0; i < Recipients.Count; i++)
            if (Recipients[i] == recipientEmail)
@@ -156,7 +166,7 @@ namespace NotificationManager
 
     public void AddRecipientToSignal(string signalSignature, string recipientEmail)
     {
-      if (signalSignature.IsValid() && recipientEmail.IsValid())
+      if (signalSignature.IsValid() && recipientEmail.IsEmailValid())
       {
         Signal signal = GetSignal(signalSignature);
 
@@ -168,7 +178,7 @@ namespace NotificationManager
 
     public void AddRecipientToAllSignals(string recipientEmail)
     {
-      if (recipientEmail.IsValid())
+      if (recipientEmail.IsEmailValid())
       {
         foreach (Signal signal in Signals)
           AddRecipientToSignal(signal.Name, recipientEmail);
@@ -178,7 +188,7 @@ namespace NotificationManager
 
     public bool IsRecipientAssignedToSignal(string signalSignature, string recipientEmail)
     {
-      if (signalSignature.IsValid())
+      if (signalSignature.IsValid() && recipientEmail.IsEmailValid())
       {
         Signal signal = GetSignal(signalSignature);
 
@@ -202,7 +212,7 @@ namespace NotificationManager
 
     public void RemoveRecipientFromSignal(string signalSignature, string recipientEmail)
     {
-      if (signalSignature.IsValid() && recipientEmail.IsValid())
+      if (signalSignature.IsValid() && recipientEmail.IsEmailValid())
       {
         Signal signal = GetSignal(signalSignature);
 
@@ -214,7 +224,7 @@ namespace NotificationManager
 
     public void RemoveRecipientFromAllSignals(string recipientEmail)
     {
-      if (recipientEmail.IsValid())
+      if (recipientEmail.IsEmailValid())
       {
         foreach (Signal signal in Signals)
           if (signal.Exists())
