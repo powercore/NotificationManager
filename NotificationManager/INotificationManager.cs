@@ -42,7 +42,7 @@ namespace NotificationManager
 
     private string GetRecipient(string email)
     {
-      if (email.IsEmailValid())
+      if (email.IsValid())
         foreach (string recipientEmail in Recipients)
         {
           if (recipientEmail == email)
@@ -54,7 +54,7 @@ namespace NotificationManager
 
     public bool IsRecipientExists(string email)
     {
-      if (email.IsEmailValid())
+      if (email.IsValid())
       {
         if (GetRecipient(email).Exists())
           return true;
@@ -65,7 +65,7 @@ namespace NotificationManager
 
     public void AddNewRecipient(string email)
     {
-      if (email.IsEmailValid())
+      if (email.IsValid())
       {
         if (!IsRecipientExists(email))
         {
@@ -76,7 +76,7 @@ namespace NotificationManager
 
     public void DeleteRecipient(string recipientEmail)
     {
-       if (recipientEmail.IsEmailValid())
+       if (recipientEmail.IsValid())
        {
           for (int i = 0; i < Recipients.Count; i++)
            if (Recipients[i] == recipientEmail)
@@ -188,7 +188,7 @@ namespace NotificationManager
 
     public bool IsRecipientAssignedToSignal(string signalSignature, string recipientEmail)
     {
-      if (signalSignature.IsValid() && recipientEmail.IsEmailValid())
+      if (signalSignature.IsValid() && recipientEmail.IsValid())
       {
         Signal signal = GetSignal(signalSignature);
 
@@ -212,7 +212,7 @@ namespace NotificationManager
 
     public void RemoveRecipientFromSignal(string signalSignature, string recipientEmail)
     {
-      if (signalSignature.IsValid() && recipientEmail.IsEmailValid())
+      if (signalSignature.IsValid() && recipientEmail.IsValid())
       {
         Signal signal = GetSignal(signalSignature);
 
@@ -224,7 +224,7 @@ namespace NotificationManager
 
     public void RemoveRecipientFromAllSignals(string recipientEmail)
     {
-      if (recipientEmail.IsEmailValid())
+      if (recipientEmail.IsValid())
       {
         foreach (Signal signal in Signals)
           if (signal.Exists())
@@ -246,20 +246,21 @@ namespace NotificationManager
       { 
           XmlSerializer sr = new XmlSerializer(this.GetType());
           TextReader reader = new StreamReader(AppDomain.CurrentDomain.BaseDirectory + "data.xml");
-          NotificationManager temp = (NotificationManager) sr.Deserialize(reader);
+          NotificationManager temp = (NotificationManager)sr.Deserialize(reader);
             foreach (Signal signal in temp.Signals)
             {
               Signal newSignal = new Signal();
               newSignal.SetupSignal(signal.Name);
 
-                foreach (string email in signal.Recipients)
-                    newSignal.Recipients.Add(email);
+              foreach (string email in signal.Recipients)
+                newSignal.Recipients.Add(email);
 
-             Signals.Add(newSignal);
+              Signals.Add(newSignal);
             }
         return true;
       }
       return false;
     }
+
   }
 }
