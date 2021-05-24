@@ -8,8 +8,15 @@ namespace NotificationManager
     {
       NotificationManager nm = new NotificationManager();
 
-      if (!nm.Restore())
-      { 
+      if (nm.Restore())
+      {
+        Console.WriteLine(nm.GetAllSignals());
+        nm.ProceedSignal("ROOF_IS_ON_FIRE");
+        nm.ProceedSignal("NEW_TANG");
+        nm.ProceedSignal("HOW_MUCH_IS_DA_FISH");
+      }
+      else
+      {
         nm.AddNewSignal("NEW_TANG");
         nm.AddRecipientToSignal("NEW_TANG", "requests@yeahbabymgmt.com");
         nm.AddNewSignal("ROOF_IS_ON_FIRE");
@@ -23,7 +30,8 @@ namespace NotificationManager
         nm.AddRecipientToAllSignals("miketysonlive@gmail.com");
 
         Console.WriteLine(nm.GetAllSignals());
-        Console.WriteLine($"Mike Tyson assigned to alarm \"NEW_TANG\" and it is { nm.IsRecipientAssignedToSignal("NEW_TANG", "miketysonlive@gmail.com")}");
+        Console.WriteLine(
+          $"Mike Tyson assigned to alarm \"NEW_TANG\" and it is {nm.IsRecipientAssignedToSignal("NEW_TANG", "miketysonlive@gmail.com")}");
 
         nm.ProceedSignal("ROOF_IS_ON_FIRE");
         Console.WriteLine("Removing mr Johnson from \"ROOF_IS_ON_FIRE\" alarm list.");
@@ -38,13 +46,6 @@ namespace NotificationManager
 
         nm.ProceedSignal("ROOF_IS_ON_FIRE");
         nm.SaveChanges();
-      }
-       else
-      {
-        Console.WriteLine(nm.GetAllSignals());
-        nm.ProceedSignal("ROOF_IS_ON_FIRE");
-        nm.ProceedSignal("NEW_TANG");
-        nm.ProceedSignal("HOW_MUCH_IS_DA_FISH");
       }
     }
   }

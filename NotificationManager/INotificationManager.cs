@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace NotificationManager
@@ -22,10 +23,7 @@ namespace NotificationManager
     }
     public static bool IsEmailValid( this string obj )
     {
-      if (obj.IsValid())
-        return Regex.Match(obj, "^\\S+@\\S+\\.\\S+$").Success;
-      else
-        return false;
+      return obj.IsValid() && Regex.Match(obj, "^\\S+@\\S+\\.\\S+$").Success;
     }
   }
 
@@ -42,49 +40,30 @@ namespace NotificationManager
 
     private string GetRecipient(string email)
     {
-      if (email.IsValid())
-        foreach (string recipientEmail in Recipients)
-        {
-          if (recipientEmail == email)
-            return recipientEmail;
-
-        }
-      return null;
+      return email.IsValid() ? Recipients.FirstOrDefault(recipientEmail => recipientEmail == email) : null;
     }
 
     public bool IsRecipientExists(string email)
     {
-      if (email.IsValid())
-      {
-        if (GetRecipient(email).Exists())
-          return true;
-
-      }
-      return false;
+      return email.IsValid() && GetRecipient(email).Exists();
     }
 
     public void AddNewRecipient(string email)
     {
-      if (email.IsValid())
-      {
-        if (!IsRecipientExists(email))
-        {
-          Recipients.Add(email);
-        }
-      }
+      if (!email.IsValid()) return;
+      if (!IsRecipientExists(email))
+        Recipients.Add(email);
     }
 
     public void DeleteRecipient(string recipientEmail)
     {
-       if (recipientEmail.IsValid())
-       {
-          for (int i = 0; i < Recipients.Count; i++)
-           if (Recipients[i] == recipientEmail)
-           {
-              Recipients.RemoveAt(i);
-              break;
-           }
-       }
+      if (!recipientEmail.IsValid()) return;
+      for (int i = 0; i < Recipients.Count; i++)
+        if (Recipients[i] == recipientEmail)
+        {
+          Recipients.RemoveAt(i);
+          break;
+        }
     }
 
     public void SendAlarm()
@@ -121,37 +100,21 @@ namespace NotificationManager
 
     private Signal GetSignal(string signalSignature)
     {
-      foreach (Signal signal in Signals)
-      {
-        if (signal.Name == signalSignature)
-          return signal;
-
-      }
-      return null;
+      return Signals.FirstOrDefault(signal => signal.Name == signalSignature);
     }
 
     private bool IsSignalExists(string signalSignature)
     {
-      if (signalSignature.IsValid())
-      {
-        if (GetSignal(signalSignature).Exists())
-          return true;
-
-      }
-      return false;
+      return signalSignature.IsValid() && GetSignal(signalSignature).Exists();
     }
 
     public void AddNewSignal(string signalSignature)
     {
-      if (signalSignature.IsValid())
-      { 
-        if (!IsSignalExists(signalSignature))
-        { 
-          Signal signal = new Signal();
-          signal.SetupSignal(signalSignature);
-          Signals.Add(signal);
-        }
-      }
+      if (!signalSignature.IsValid()) return;
+      if (IsSignalExists(signalSignature)) return;
+      Signal signal = new Signal();
+      signal.SetupSignal(signalSignature);
+      Signals.Add(signal);
     }
 
     public string GetAllSignals()
@@ -166,71 +129,51 @@ namespace NotificationManager
 
     public void AddRecipientToSignal(string signalSignature, string recipientEmail)
     {
-      if (signalSignature.IsValid() && recipientEmail.IsEmailValid())
-      {
-        Signal signal = GetSignal(signalSignature);
+      if (!signalSignature.IsValid() || !recipientEmail.IsEmailValid()) return;
+      Signal signal = GetSignal(signalSignature);
 
-        if (signal.Exists())
-          signal.AddNewRecipient(recipientEmail);
-
-      }
+      if (signal.Exists())
+        signal.AddNewRecipient(recipientEmail);
     }
 
     public void AddRecipientToAllSignals(string recipientEmail)
     {
-      if (recipientEmail.IsEmailValid())
-      {
-        foreach (Signal signal in Signals)
-          AddRecipientToSignal(signal.Name, recipientEmail);
-
-      }
+      if (!recipientEmail.IsEmailValid()) return;
+      foreach (Signal signal in Signals)
+        AddRecipientToSignal(signal.Name, recipientEmail);
     }
 
     public bool IsRecipientAssignedToSignal(string signalSignature, string recipientEmail)
     {
-      if (signalSignature.IsValid() && recipientEmail.IsValid())
-      {
-        Signal signal = GetSignal(signalSignature);
+      if (!signalSignature.IsValid() || !recipientEmail.IsValid()) return false;
+      Signal signal = GetSignal(signalSignature);
 
-        if (signal.Exists())
-          return signal.IsRecipientExists(recipientEmail);
-
-      }
-      return false;
+      return signal.Exists() && signal.IsRecipientExists(recipientEmail);
     }
 
     public void ProceedSignal(string signalSignature)
     {
-      if (signalSignature.IsValid())
-      {
-        Signal signal = GetSignal(signalSignature);
+      if (!signalSignature.IsValid()) return;
+      Signal signal = GetSignal(signalSignature);
 
-        if (signal.Exists())
-          signal.SendAlarm();
-      }
+      if (signal.Exists())
+        signal.SendAlarm();
     }
 
     public void RemoveRecipientFromSignal(string signalSignature, string recipientEmail)
     {
-      if (signalSignature.IsValid() && recipientEmail.IsValid())
-      {
-        Signal signal = GetSignal(signalSignature);
+      if (!signalSignature.IsValid() || !recipientEmail.IsValid()) return;
+      Signal signal = GetSignal(signalSignature);
 
-         if (signal.Exists())
-           signal.DeleteRecipient(recipientEmail);
-
-      }
+      if (signal.Exists())
+        signal.DeleteRecipient(recipientEmail);
     }
 
     public void RemoveRecipientFromAllSignals(string recipientEmail)
     {
-      if (recipientEmail.IsValid())
-      {
-        foreach (Signal signal in Signals)
-          if (signal.Exists())
-            signal.DeleteRecipient(recipientEmail);
-
-      }
+      if (!recipientEmail.IsValid()) return;
+      foreach (var signal in Signals.Where(signal => signal.Exists()))
+        signal.DeleteRecipient(recipientEmail);
     }
     public void SaveChanges()
     {
@@ -242,24 +185,21 @@ namespace NotificationManager
 
     public bool Restore()
     {
-      if (System.IO.File.Exists(AppDomain.CurrentDomain.BaseDirectory + "data.xml"))
-      { 
-          XmlSerializer sr = new XmlSerializer(this.GetType());
-          TextReader reader = new StreamReader(AppDomain.CurrentDomain.BaseDirectory + "data.xml");
-          NotificationManager temp = (NotificationManager)sr.Deserialize(reader);
-            foreach (Signal signal in temp.Signals)
-            {
-              Signal newSignal = new Signal();
-              newSignal.SetupSignal(signal.Name);
+      if (!System.IO.File.Exists(AppDomain.CurrentDomain.BaseDirectory + "data.xml")) return false;
+      XmlSerializer sr = new XmlSerializer(this.GetType());
+      TextReader reader = new StreamReader(AppDomain.CurrentDomain.BaseDirectory + "data.xml");
+      NotificationManager temp = (NotificationManager)sr.Deserialize(reader);
+      foreach (Signal signal in temp.Signals)
+      {
+        Signal newSignal = new Signal();
+        newSignal.SetupSignal(signal.Name);
 
-              foreach (string email in signal.Recipients)
-                newSignal.Recipients.Add(email);
+        foreach (string email in signal.Recipients)
+          newSignal.Recipients.Add(email);
 
-              Signals.Add(newSignal);
-            }
-        return true;
+        Signals.Add(newSignal);
       }
-      return false;
+      return true;
     }
 
   }
